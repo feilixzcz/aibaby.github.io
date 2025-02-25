@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 智能助手 - 终极版</title>
+    <style>
+        /* 基础样式 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .dark-theme {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+        }
+
+        .main-container {
+            width: 90%;
+            max-width: 1200px;
+            height: 90vh;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: #2c3e50;
+            color: white;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 {
+            margin: 0 0 30px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .menu-item {
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-item.active {
+            background: #3498db;
+        }
+
+        .menu-icon {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: #3498db;
+            color: white;
+            border-radius: 12px 12px 0 12px;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 0 12px 12px 12px;
+        }
+
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-area input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .input-area button {
+            padding: 12px 24px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .input-area button:hover {
+            background: #2980b9;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            margin-top: auto;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            margin: 20px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-dot.online {
+            background: #2ecc71;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .suggestion-list {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .suggestion-list div {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .suggestion-list div:hover {
+            background: #f0f0f0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #333;
+        }
+
+        .modal-content label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .modal-content select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .modal-content button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .modal-content button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-container {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+            .input-area {
+                padding: 10px;
+                flex-direction: column;
+            }
+            .input-area input {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+            .input-area button {
+                width: 100%;
+            }
+        }
+
+        /* 点赞和点踩按钮样式 */
+        .feedback-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .feedback-buttons button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .feedback-buttons button.like {
+            color: #2ecc71;
+        }
+
+        .feedback-buttons button.dislike {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <h2>AI 助手</h2>
+            <div class="menu-item active" onclick="showChat()">
+                <span class="menu-icon">💬</span>
+                聊天
+            </div>
+            <div class="menu-item" onclick="openSettings()">
+                <span class="menu-icon">⚙️</span>
+                设置
+            </div>
+            <div class="menu-item" onclick="openKnowledge()">
+                <span class="menu-icon">📚</span>
+                知识库
+            </div>
+            <div class="menu-item" onclick="openHistory()">
+                <span class="menu-icon">📊</span>
+                历史查看
+            </div>
+            <div class="menu-item" onclick="openUserSettings()">
+                <span class="menu-icon">👤</span>
+                用户设置
+            </div>
+            <div class="menu-item" onclick="openLanguageSettings()">
+                <span class="menu-icon">🌐</span>
+                语言设置
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 聊天窗口 -->
+            <div class="chat-container" id="chatContainer">
+                <div class="message bot-message">
+                    <div class="message-content">您好！我是AI助手，请问有什么可以帮您？</div>
+                    <div class="message-timestamp">12:00:00</div>
+                </div>
+            </div>
+
+            <!-- 输入区域 -->
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="输入您的问题...">
+                <button onclick="sendMessage()">发送</button>
+                <button id="voiceInputButton" onclick="startVoiceInput()">🎤</button>
+            </div>
+            <div id="suggestionList" class="suggestion-list"></div>
+
+            <!-- 状态指示器 -->
+            <div class="status-indicator">
+                <div class="status-dot online"></div>
+                <span>系统在线</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置弹窗 -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <h2>设置</h2>
+            <label for="storageType">选择存储方式：</label>
+            <select id="storageType">
+                <option value="indexeddb">IndexedDB</option>
+                <option value="localstorage">LocalStorage</option>
+            </select>
+            <button onclick="saveSettings()">保存</button>
+        </div>
+    </div>
+
+    <!-- 知识库弹窗 -->
+    <div class="modal" id="knowledgeModal">
+        <div class="modal-content">
+            <h2>知识库</h2>
+            <ul id="knowledgeList"></ul>
+        </div>
+    </div>
+
+    <!-- 历史记录弹窗 -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <h2>历史记录</h2>
+            <ul id="historyList"></ul>
+        </div>
+    </div>
+
+    <!-- 用户设置弹窗 -->
+    <div class="modal" id="userSettingsModal">
+        <div class="modal-content">
+            <h2>用户设置</h2>
+            <label for="userName">用户名：</label>
+            <input type="text" id="userName" placeholder="请输入用户名">
+            <label for="userTheme">主题：</label>
+            <select id="userTheme">
+                <option value="light">浅色</option>
+                <option value="dark">深色</option>
+            </select>
+            <button onclick="saveUserSettings()">保存</button>
+        </div>
+    </div>
+
+    <!-- 语言设置弹窗 -->
+    <div class="modal" id="languageModal">
+        <div class="modal-content">
+            <h2>语言设置</h2>
+            <label for="languageSelect">选择语言：</label>
+            <select id="languageSelect">
+                <option value="zh-CN">中文</option>
+                <option value="en-US">English</option>
+                <option value="ja-JP">日本語</option>
+            </select>
+            <button onclick="saveLanguageSettings()">保存</button>
+        </div>
+    </div>
+
+    <script>
+        // 存储方式配置
+        const STORAGE_TYPES = { INDEXEDDB: 'indexeddb', LOCALSTORAGE: 'localstorage' };
+        let currentStorageType = localStorage.getItem('storageType') || STORAGE_TYPES.INDEXEDDB;
+
+        // IndexedDB 配置
+        const DB_CONFIG = {
+            name: 'AIChatDB',
+            version: 2,
+            stores: {
+                knowledge: '++id, timestamp',
+                conversations: '++id, sessionId, &timestamp'
+            }
+        };
+
+        // 数据库实例
+        let db = null;
+
+        // 初始化数据库
+        async function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_CONFIG.name, DB_CONFIG.version);
+
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    
+                    if (!db.objectStoreNames.contains('knowledge')) {
+                        const store = db.createObjectStore('knowledge', {
+                            keyPath: 'id',
+                            autoIncrement: true
+                        });
+                        store.createIndex('by_key', 'key', { unique: true });
+                    }
+
+                    if (!db.objectStoreNames.contains('conversations')) {
+                        const store = db.createObjectStore('conversations', {
+                            keyPath: 'id'
+                        });
+                        store.createIndex('by_session', 'sessionId');
+                        store.createIndex('by_timestamp', 'timestamp');
+                    }
+                };
+
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    resolve(db);
+                };
+
+                request.onerror = (event) => {
+                    console.error('数据库初始化失败:', event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        // 数据库操作类
+        class DBApi {
+            static async getKnowledge(key) {
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction('knowledge', 'readonly');
+                    const store = tx.objectStore('knowledge');
+                    const index = store.index('by_key');
+                    const request = index.get(key);
+                    
+                    request.onsuccess = () => resolve(request.result?.value);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            static async saveKnowledge(key, value) {
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction('knowledge', 'readwrite');
+                    const store = tx.objectStore('knowledge');
+                    
+                    // 先检查是否存在
+                    const index = store.index('by_key');
+                    index.get(key).onsuccess = (e) => {
+                        const data = e.target.result;
+                        
+                        if (data) {
+                            data.value = value;
+                            data.timestamp = Date.now();
+                            store.put(data).onsuccess = () => resolve();
+                            store.put(data).onerror = () => reject(tx.error);
+                        } else {
+                            store.add({ key, value, timestamp: Date.now() }).onsuccess = () => resolve();
+                            store.add({ key, value, timestamp: Date.now() }).onerror = () => reject(tx.error);
+                        }
+                    };
+                    
+                    tx.onerror = () => reject(tx.error);
+                });
+            }
+
+            static async saveConversation(sessionId, messages) {
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction('conversations', 'readwrite');
+                    const store = tx.objectStore('conversations');
+                    
+                    store.add({
+                        sessionId,
+                        messages,
+                        timestamp: Date.now()
+                    }).onsuccess = () => resolve();
+                    store.add({
+                        sessionId,
+                        messages,
+                        timestamp: Date.now()
+                    }).onerror = () => reject(tx.error);
+                });
+            }
+
+            static async getAllConversations() {
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction('conversations', 'readonly');
+                    const store = tx.objectStore('conversations');
+                    const request = store.getAll();
+                    
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+        }
+
+        // LocalStorage 操作类
+        class LocalStorageApi {
+            static async getKnowledge(key) {
+                return JSON.parse(localStorage.getItem(key)) || {};
+            }
+
+            static async saveKnowledge(key, value) {
+                localStorage.setItem(key, JSON.stringify(value));
+            }
+
+            static async saveConversation(sessionId, messages) {
+                const conversations = JSON.parse(localStorage.getItem('conversations')) || [];
+                conversations.push({ sessionId, messages, timestamp: Date.now() });
+                localStorage.setItem('conversations', JSON.stringify(conversations));
+            }
+
+            static async getAllConversations() {
+                return JSON.parse(localStorage.getItem('conversations')) || [];
+            }
+        }
+
+        // 上下文管理器
+        class ContextManager {
+            constructor() {
+                this.context = [];
+                this.maxContextLength = 5; // 最大上下文长度
+            }
+
+            addContext(role, message) {
+                this.context.push({ role, message });
+                if (this.context.length > this.maxContextLength) {
+                    this.context.shift(); // 移除最早的上下文
+                }
+            }
+
+            getContext() {
+                return this.context;
+            }
+
+            clearContext() {
+                this.context = [];
+            }
+        }
+
+        // 学习管理器
+        class LearningManager {
+            constructor() {
+                this.learnedData = {};
+            }
+
+            recordInteraction(userMessage, botResponse) {
+                const key = userMessage.toLowerCase();
+                if (!this.learnedData[key]) {
+                    this.learnedData[key] = { count: 0, responses: [] };
+                }
+                this.learnedData[key].count++;
+                this.learnedData[key].responses.push(botResponse);
+            }
+
+            getBestResponse(userMessage) {
+                const key = userMessage.toLowerCase();
+                if (this.learnedData[key]) {
+                    const responses = this.learnedData[key].responses;
+                    return responses[responses.length - 1]; // 返回最新的回应
+                }
+                return null;
+            }
+        }
+
+        // 增强后的词库类
+        class Vocabulary {
+            constructor() {
+                this.words = {
+                    // 原有词库
+                    "问候": ["你好！", "您好！", "早上好！", "下午好！", "晚上好！"],
+                    "告别": ["再见！", "拜拜！", "下次见！", "祝您有美好的一天！"],
+                    "感谢": ["不客气！", "很高兴能帮到您！", "这是我的荣幸！"],
+                    "道歉": ["没关系！", "别担心！", "小事一桩！"],
+                    "询问": ["我很好，谢谢！", "还不错，您呢？", "挺好的，您最近怎么样？"],
+                    "建议": ["您可以试试这个方法！", "我建议您这样做！", "也许您可以考虑这个方案！"],
+                    "天气": ["今天天气不错！", "最近天气变化大，请注意保暖！", "您可以查看天气预报获取详细信息"],
+                    "时间": ["现在是北京时间：", "当前时间是：", new Date().toLocaleTimeString()],
+                    "帮助": ["我可以帮您做什么？", "您需要什么帮助？", "请告诉我您的需求！"],
+                    "默认": ["我不太明白，能再说详细点吗？", "这个我需要再学习一下", "您能换种方式说吗？"],
+                    
+                    // 新增词库
+                    "笑话": ["为什么程序员总分不清万圣节和圣诞节？因为 Oct 31 == Dec 25！", 
+                           "什么椅子最不喜欢坐人？电椅！",
+                           "为什么数学书总是很悲伤？因为它有太多的问题！"],
+                    "新闻": ["今日头条：人工智能助力医疗领域突破", 
+                          "科技快讯：量子计算机研发取得新进展",
+                          "财经新闻：全球数字货币市值创新高"],
+                    "饮食": ["健康小贴士：每天建议喝8杯水", 
+                          "烹饪技巧：炒菜时适量加醋可以保留维生素",
+                          "营养建议：多吃深色蔬菜有益健康"]
+                };
+                
+                this.patterns = {
+                    // 原有模式
+                    "你会开(.*)吗？": "我是AI，不会开$1，但可以帮您找到最好的$1教程！",
+                    "怎么(.*)": "关于$1，建议您可以：1.查阅相关资料 2.观看教学视频 3.咨询专业人士",
+                    "为什么(.*)": "$1的原因可能包括：1.系统设置 2.环境因素 3.操作方式，需要具体分析",
+                    
+                    // 新增模式
+                    "哪里可以(.*)": "关于$1的位置信息，推荐使用地图应用搜索：<a href='https://maps.example.com?q=$1' target='_blank'>立即查询</a>",
+                    "最新(.*)消息": "正在为您获取最新的$1资讯... <button onclick='fetchNews(\"$1\")'>点击加载</button>",
+                    "(.*)多少钱": "为您找到$1的价格参考：<div class='price-checker' data-item='$1'></div>"
+                };
+
+                // 缓存优化
+                this.cachedKeys = Object.keys(this.words).map(k => k.toLowerCase());
+                this.synonyms = {
+                    "问候": ["你好", "hi", "hello"],
+                    "时间": ["几点", "钟点", "时辰"]
+                };
+            }
+
+            // 优化后的模糊匹配算法
+            findClosestKey(input) {
+                const cleanInput = input.toLowerCase().replace(/[^\w\u4e00-\u9fa5]/g, '');
+                let minDistance = Infinity;
+                let closestKey = null;
+
+                // 优先检查完全匹配
+                if (this.words[cleanInput]) return cleanInput;
+
+                // 使用缓存的关键词列表
+                for (const key of this.cachedKeys) {
+                    // 计算相似度的优化方法
+                    const distance = this.optimizedDistance(cleanInput, key);
+                    if (distance < minDistance && distance <= 2) {
+                        minDistance = distance;
+                        closestKey = key;
+                    }
+                }
+                return closestKey;
+            }
+
+            // 优化后的编辑距离计算（使用滚动数组）
+            optimizedDistance(a, b) {
+                if (a.length === 0) return b.length;
+                if (b.length === 0) return a.length;
+
+                let prevRow = Array.from({length: b.length + 1}, (_, i) => i);
+                let currRow = new Array(b.length + 1);
+
+                for (let i = 1; i <= a.length; i++) {
+                    currRow[0] = i;
+                    for (let j = 1; j <= b.length; j++) {
+                        const cost = a[i-1] === b[j-1] ? 0 : 1;
+                        currRow[j] = Math.min(
+                            prevRow[j] + 1,    // 删除
+                            currRow[j-1] + 1,  // 插入
+                            prevRow[j-1] + cost // 替换
+                        );
+                    }
+                    [prevRow, currRow] = [currRow, new Array(b.length + 1)];
+                }
+                return prevRow[b.length];
+            }
+
+            // 增强的响应获取
+            getResponse(input) {
+                // 优先匹配模式
+                for (const [pattern, response] of Object.entries(this.patterns)) {
+                    const regex = new RegExp(pattern);
+                    const match = input.match(regex);
+                    if (match) {
+                        return response.replace(/\$1/g, match[1] || "");
+                    }
+                }
+
+                // 模糊匹配关键词
+                const closestKey = this.findClosestKey(input);
+                if (closestKey) {
+                    const responses = this.words[closestKey];
+                    return responses[Math.floor(Math.random() * responses.length)];
+                }
+
+                // 同义词处理
+                for (const [key, synonyms] of Object.entries(this.synonyms)) {
+                    if (synonyms.includes(input.toLowerCase())) {
+                        return this.words[key][Math.floor(Math.random() * this.words[key].length)];
+                    }
+                }
+
+                return this.words["默认"][0];
+            }
+        }
+
+        // 聊天系统核心
+        class ChatSystem {
+            constructor() {
+                this.sessionId = Date.now().toString(36);
+                this.knowledge = {};
+                this.contextManager = new ContextManager();
+                this.learningManager = new LearningManager();
+                this.vocabulary = new Vocabulary();
+            }
+
+            async initialize() {
+                try {
+                    if (currentStorageType === STORAGE_TYPES.INDEXEDDB) {
+                        await initDB();
+                    }
+                    await this.loadKnowledge();
+                    this.enableUI();
+                } catch (error) {
+                    console.error('初始化失败:', error);
+                    await this.fallbackToLocalStorage();
+                }
+            }
+
+            async loadKnowledge() {
+                const keys = ['responses', 'learnedData', 'contextConfig'];
+                
+                for (const key of keys) {
+                    if (currentStorageType === STORAGE_TYPES.INDEXEDDB) {
+                        this.knowledge[key] = await DBApi.getKnowledge(key) || {};
+                    } else {
+                        this.knowledge[key] = await LocalStorageApi.getKnowledge(key) || {};
+                    }
+                }
+            }
+
+            async saveKnowledge(key) {
+                if (currentStorageType === STORAGE_TYPES.INDEXEDDB) {
+                    await DBApi.saveKnowledge(key, this.knowledge[key]);
+                } else {
+                    await LocalStorageApi.saveKnowledge(key, this.knowledge[key]);
+                }
+            }
+
+            async saveConversation(sessionId, messages) {
+                if (currentStorageType === STORAGE_TYPES.INDEXEDDB) {
+                    await DBApi.saveConversation(sessionId, messages);
+                } else {
+                    await LocalStorageApi.saveConversation(sessionId, messages);
+                }
+            }
+
+            async getAllConversations() {
+                if (currentStorageType === STORAGE_TYPES.INDEXEDDB) {
+                    return await DBApi.getAllConversations();
+                } else {
+                    return await LocalStorageApi.getAllConversations();
+                }
+            }
+
+            async fallbackToLocalStorage() {
+                console.warn('使用 LocalStorage 作为备用存储');
+                currentStorageType = STORAGE_TYPES.LOCALSTORAGE;
+                await this.loadKnowledge();
+            }
+
+            enableUI() {
+                document.getElementById('userInput').disabled = false;
+                document.querySelector('.input-container button').disabled = false;
+                const chatContainer = document.getElementById('chatContainer');
+                chatContainer.lastElementChild.textContent = '系统就绪，可以开始对话';
+            }
+
+            async processMessage(message) {
+                // 记录用户消息到上下文
+                this.contextManager.addContext('user', message);
+
+                // 检查词库
+                const vocabResponse = this.vocabulary.getResponse(message);
+                if (vocabResponse) {
+                    return vocabResponse;
+                }
+
+                // 检查学习数据
+                const learnedResponse = this.learningManager.getBestResponse(message);
+                if (learnedResponse) {
+                    return learnedResponse;
+                }
+
+                // 获取外部知识
+                const externalKnowledge = await fetchExternalKnowledge(message);
+
+                // 生成回应
+                const response = `回应: ${message}。${externalKnowledge}`;
+
+                // 记录AI回应到上下文
+                this.contextManager.addContext('bot', response);
+
+                // 记录交互
+                this.learningManager.recordInteraction(message, response);
+
+                await this.saveRelevantData();
+                return response;
+            }
+
+            async saveRelevantData() {
+                await Promise.all([
+                    this.saveKnowledge('responses'),
+                    this.saveKnowledge('learnedData'),
+                    this.saveConversation(this.sessionId, this.getConversationHistory())
+                ]);
+            }
+
+            getConversationHistory() {
+                const chatContainer = document.getElementById('chatContainer');
+                return Array.from(chatContainer.children)
+                    .filter(msg => msg.classList.contains('message'))
+                    .map(msg => ({
+                        role: msg.classList.contains('user-message') ? 'user' : 'bot',
+                        content: msg.querySelector('.message-content').textContent,
+                        timestamp: msg.querySelector('.message-timestamp').textContent
+                    }));
+            }
+        }
+
+        // 模拟外部知识获取
+        async function fetchExternalKnowledge(query) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve(`外部知识: ${query}`);
+                }, 1000);
+            });
+        }
+
+        // 初始化系统
+        const chatSystem = new ChatSystem();
+        chatSystem.initialize();
+
+        // UI交互函数
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const chatContainer = document.getElementById('chatContainer');
+            
+            // 用户消息
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user-message';
+            userMsg.innerHTML = `
+                <div class="message-content">${message}</div>
+                <div class="message-timestamp">${new Date().toLocaleTimeString()}</div>
+                <div class="message-status">已发送 <span class="icon">✔️</span></div>
+            `;
+            chatContainer.appendChild(userMsg);
+
+            input.value = '';
+            // 自动滚动到底部
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // 显示“正在思考”动画
+            const thinkingIndicator = document.createElement('div');
+            thinkingIndicator.className = 'thinking-indicator';
+            thinkingIndicator.innerHTML = `
+                <span></span>
+                <span></span>
+                <span></span>
+            `;
+            chatContainer.appendChild(thinkingIndicator);
+            // 自动滚动到底部
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            try {
+                // 处理消息并获取回应
+                const response = await chatSystem.processMessage(message);
+
+                // 移除“正在思考”动画
+                chatContainer.removeChild(thinkingIndicator);
+
+                // 机器人消息
+                const botMsg = document.createElement('div');
+                botMsg.className = 'message bot-message';
+                botMsg.innerHTML = `
+                    <div class="message-content typing-animation">${response}</div>
+                    <div class="message-timestamp">${new Date().toLocaleTimeString()}</div>
+                    <div class="feedback-buttons">
+                        <button class="like" onclick="handleFeedback('like', '${response}')">👍</button>
+                        <button class="dislike" onclick="handleFeedback('dislike', '${response}')">👎</button>
+                    </div>
+                `;
+                chatContainer.appendChild(botMsg);
+
+                // 逐行输入动画
+                const contentElement = botMsg.querySelector('.message-content');
+                const fullText = contentElement.textContent;
+                contentElement.textContent = '';
+                let index = 0;
+
+                const typingInterval = setInterval(() => {
+                    if (index < fullText.length) {
+                        contentElement.textContent += fullText[index];
+                        index++;
+                    } else {
+                        clearInterval(typingInterval);
+                        contentElement.classList.remove('typing-animation');
+                    }
+                }, 50); // 每50ms显示一个字符
+
+                // 自动滚动到底部
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            } catch (error) {
+                // 移除“正在思考”动画
+                chatContainer.removeChild(thinkingIndicator);
+
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'message bot-message';
+                errorMsg.innerHTML = `
+                    <div class="message-content">系统错误：${error.message}</div>
+                    <div class="message-timestamp">${new Date().toLocaleTimeString()}</div>
+                `;
+                chatContainer.appendChild(errorMsg);
+
+                // 自动滚动到底部
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+
+        // 处理用户反馈
+        function handleFeedback(type, response) {
+            const key = response.toLowerCase();
+            if (type === 'like') {
+                chatSystem.learningManager.recordInteraction(key, response);
+                alert('感谢您的点赞！');
+            } else if (type === 'dislike') {
+                chatSystem.learningManager.recordInteraction(key, response);
+                alert('感谢您的反馈，我们会改进！');
+            }
+        }
+
+        // 监听回车键
+        document.getElementById('userInput').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // 阻止默认行为（如换行）
+                sendMessage(); // 发送消息
+            }
+        });
+
+        // 自动保存机制
+        setInterval(async () => {
+            await chatSystem.saveKnowledge('responses');
+            await chatSystem.saveKnowledge('learnedData');
+        }, 30000); // 每30秒自动保存
+
+        window.addEventListener('beforeunload', async () => {
+            await chatSystem.saveRelevantData();
+        });
+
+        // 设置弹窗功能
+        function openSettings() {
+            const settingsModal = document.getElementById('settingsModal');
+            const storageTypeSelect = document.getElementById('storageType');
+            storageTypeSelect.value = currentStorageType;
+            settingsModal.classList.add('open');
+        }
+
+        function saveSettings() {
+            const storageTypeSelect = document.getElementById('storageType');
+            const newStorageType = storageTypeSelect.value;
+
+            if (newStorageType !== currentStorageType) {
+                currentStorageType = newStorageType;
+                localStorage.setItem('storageType', currentStorageType);
+
+                // 重新初始化聊天系统
+                chatSystem = new ChatSystem();
+                chatSystem.initialize();
+
+                alert('设置已保存，系统已重新初始化。');
+            } else {
+                alert('设置已保存。');
+            }
+
+            closeSettings();
+        }
+
+        function closeSettings() {
+            const settingsModal = document.getElementById('settingsModal');
+            settingsModal.classList.remove('open');
+        }
+
+        // 知识库弹窗功能
+        function openKnowledge() {
+            const knowledgeModal = document.getElementById('knowledgeModal');
+            const knowledgeList = document.getElementById('knowledgeList');
+            knowledgeList.innerHTML = '';
+
+            // 加载知识库数据
+            const vocabulary = chatSystem.vocabulary;
+            for (const [key, responses] of Object.entries(vocabulary.words)) {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${key}</strong>: ${responses.join(', ')}`;
+                knowledgeList.appendChild(li);
+            }
+
+            knowledgeModal.classList.add('open');
+        }
+
+        function closeKnowledge() {
+            const knowledgeModal = document.getElementById('knowledgeModal');
+            knowledgeModal.classList.remove('open');
+        }
+
+        // 历史记录弹窗功能
+        async function openHistory() {
+            const historyModal = document.getElementById('historyModal');
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+
+            // 加载历史记录
+            const conversations = await chatSystem.getAllConversations();
+            conversations.forEach(conversation => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${new Date(conversation.timestamp).toLocaleString()}</strong>: ${conversation.messages.map(msg => `${msg.role}: ${msg.content}`).join('<br>')}`;
+                historyList.appendChild(li);
+            });
+
+            historyModal.classList.add('open');
+        }
+
+        function closeHistory() {
+            const historyModal = document.getElementById('historyModal');
+            historyModal.classList.remove('open');
+        }
+
+        // 显示聊天窗口
+        function showChat() {
+            document.getElementById('chatContainer').style.display = 'flex';
+            document.getElementById('input-area').style.display = 'flex';
+        }
+
+        // 语音输入功能
+        function startVoiceInput() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'zh-CN';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.start();
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('userInput').value = transcript;
+            };
+
+            recognition.onerror = (event) => {
+                console.error('语音识别错误:', event.error);
+            };
+        }
+
+        // 自动补全功能
+        const autoCompleteData = ['你好', '天气', '时间', '笑话', '新闻', '帮助'];
+
+        document.getElementById('userInput').addEventListener('input', (event) => {
+            const input = event.target.value;
+            const suggestions = autoCompleteData.filter(item => item.startsWith(input));
+            const suggestionList = document.getElementById('suggestionList');
+
+            if (suggestions.length > 0) {
+                suggestionList.innerHTML = suggestions.map(item => `<div onclick="selectSuggestion('${item}')">${item}</div>`).join('');
+                suggestionList.style.display = 'block';
+            } else {
+                suggestionList.style.display = 'none';
+            }
+        });
+
+        function selectSuggestion(suggestion) {
+            document.getElementById('userInput').value = suggestion;
+            document.getElementById('suggestionList').style.display = 'none';
+        }
+
+        // 用户设置功能
+        function openUserSettings() {
+            const userSettingsModal = document.getElementById('userSettingsModal');
+            userSettingsModal.classList.add('open');
+        }
+
+        function saveUserSettings() {
+            const userName = document.getElementById('userName').value;
+            const userTheme = document.getElementById('userTheme').value;
+
+            localStorage.setItem('userName', userName);
+            localStorage.setItem('userTheme', userTheme);
+
+            applyUserSettings();
+            closeUserSettings();
+        }
+
+        function applyUserSettings() {
+            const userName = localStorage.getItem('userName') || '用户';
+            const userTheme = localStorage.getItem('userTheme') || 'light';
+
+            document.body.classList.toggle('dark-theme', userTheme === 'dark');
+            document.getElementById('userName').value = userName;
+            document.getElementById('userTheme').value = userTheme;
+        }
+
+        function closeUserSettings() {
+            const userSettingsModal = document.getElementById('userSettingsModal');
+            userSettingsModal.classList.remove('open');
+        }
+
+        // 初始化用户设置
+        applyUserSettings();
+
+        // 语言设置功能
+        function openLanguageSettings() {
+            const languageModal = document.getElementById('languageModal');
+            languageModal.classList.add('open');
+        }
+
+        function saveLanguageSettings() {
+            const languageSelect = document.getElementById('languageSelect');
+            const selectedLanguage = languageSelect.value;
+            localStorage.setItem('language', selectedLanguage);
+            alert('语言设置已保存，请刷新页面以应用更改。');
+            closeLanguageSettings();
+        }
+
+        function closeLanguageSettings() {
+            const languageModal = document.getElementById('languageModal');
+            languageModal.classList.remove('open');
+        }
+
+        // 初始化语言设置
+        const currentLanguage = localStorage.getItem('language') || 'zh-CN';
+        document.getElementById('languageSelect').value = currentLanguage;
+    </script>
+</body>
+</html>
